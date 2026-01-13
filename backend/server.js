@@ -3,6 +3,7 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 import { connectDB } from './config/database.js'
 import todoRoutes from './routes/todoRoutes.js'
+import travelRoutes from './routes/travelRoutes.js'
 
 // Load environment variables from .env file
 dotenv.config()
@@ -81,6 +82,13 @@ app.get('/api/health', (req, res) => {
 app.use('/api/todos', todoRoutes)
 
 /**
+ * Travel Agent Routes
+ * 
+ * All travel-related routes are prefixed with /api/travel
+ */
+app.use('/api/travel', travelRoutes)
+
+/**
  * Root Endpoint
  * 
  * Welcome message for API
@@ -135,15 +143,30 @@ app.use((err, req, res, next) => {
  * Connects to MongoDB and starts Express server
  */
 const startServer = async () => {
+  // Connect to MongoDB (optional - travel agent works without it)
+  // Only connect if MONGODB_URI is explicitly set and not the default
+  if (MONGODB_URI && MONGODB_URI !== 'mongodb://localhost:27017/todo-app') {
+    try {
+      await connectDB(MONGODB_URI)
+      console.log('✅ Connected to MongoDB')
+    } catch (dbError) {
+      console.warn('⚠️  MongoDB connection failed:', dbError.message)
+      console.warn('⚠️  Continuing without database - travel agent will still work!')
+      console.warn('⚠️  Note: Todo API endpoints will not work without MongoDB')
+    }
+  } else {
+    console.log('ℹ️  MongoDB not configured - travel agent will work without it')
+    console.log('ℹ️  Note: Todo API endpoints require MongoDB')
+  }
+  
+  // Start Express server (always start, even without MongoDB)
   try {
-    // Connect to MongoDB
-    await connectDB(MONGODB_URI)
-    
-    // Start Express server
     app.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`)
       console.log(`📡 API available at http://localhost:${PORT}/api`)
       console.log(`🌐 CORS enabled for: ${CORS_ORIGIN}`)
+      console.log(`😺 Tom the Travel Agent is ready!`)
+      console.log(`📍 Travel API: http://localhost:${PORT}/api/travel/chat`)
     })
   } catch (error) {
     console.error('Failed to start server:', error)

@@ -39,7 +39,7 @@ export const connectDB = async (mongoURI) => {
   } catch (error) {
     // Log connection error
     console.error('❌ Error connecting to MongoDB:', error.message)
-    // Exit process if database connection fails
-    process.exit(1)
+    // Throw error instead of exiting - let the caller handle it
+    throw error
   }
 }
