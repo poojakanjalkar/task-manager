@@ -1,10 +1,54 @@
 import express from 'express';
 import { invokeTravelAgent } from '../agents/travelAgent.js';
 
+// City-specific landmarks and places - used to detect wrong city information
+const cityLandmarks = {
+  'nagpur': ['sitabardi', 'sitabuldi', 'deekshabhoomi', 'futala lake', 'ambazari lake', 'zero mile stone', 'maharajbagh', 'seminary hills', 'ramtek', 'saoji', 'orange barfi', 'tarri poha'],
+  'pune': ['shaniwar wada', 'aga khan palace', 'sinhagad fort', 'osho ashram', 'fc road', 'laxmi road', 'tulsi baug', 'dagdusheth halwai', 'parvati hill', 'misal pav', 'vada pav'],
+  'delhi': ['red fort', 'india gate', 'qutub minar', 'chandni chowk', 'connaught place', 'jama masjid', 'lotus temple', 'chole bhature', 'butter chicken', 'parathas'],
+  'mumbai': ['gateway of india', 'marine drive', 'juhu beach', 'colaba causeway', 'siddhivinayak temple', 'vada pav', 'pav bhaji', 'bhel puri'],
+  'jaipur': ['hawa mahal', 'city palace', 'johari bazaar', 'amer fort', 'jal mahal', 'dal baati churma', 'laal maas', 'ghevar'],
+  'bangalore': ['lalbagh', 'cubbon park', 'commercial street', 'iskcon temple', 'vidhana soudha', 'masala dosa', 'idli vada']
+};
+
+// Helper function to detect if wrong city landmarks are mentioned
+function detectWrongCityLandmarks(responseText, correctCity) {
+  const responseLower = responseText.toLowerCase();
+  const correctCityLower = correctCity.toLowerCase();
+  
+  // Get landmarks for the correct city
+  const correctLandmarks = cityLandmarks[correctCityLower] || [];
+  
+  // Check if response contains landmarks from other cities
+  for (const [cityKey, landmarks] of Object.entries(cityLandmarks)) {
+    if (cityKey === correctCityLower) continue;
+    
+    let wrongLandmarkCount = 0;
+    landmarks.forEach(landmark => {
+      if (responseLower.includes(landmark.toLowerCase())) {
+        wrongLandmarkCount++;
+      }
+    });
+    
+    // If multiple landmarks from another city are mentioned, it's likely wrong
+    if (wrongLandmarkCount >= 2) {
+      return cityKey;
+    }
+  }
+  
+  return null;
+}
+
 // Helper function to detect if wrong city is mentioned
 function detectWrongCity(responseText, correctCity) {
   const responseLower = responseText.toLowerCase();
   const correctCityLower = correctCity.toLowerCase();
+  
+  // First check for wrong city landmarks (more reliable)
+  const wrongCityFromLandmarks = detectWrongCityLandmarks(responseText, correctCity);
+  if (wrongCityFromLandmarks) {
+    return wrongCityFromLandmarks;
+  }
   
   // Common Indian cities that might be confused
   const commonCities = {
@@ -142,27 +186,45 @@ router.post('/chat', async (req, res) => {
     if (requestedCity) {
       const cityName = requestedCity;
       
-      // Create a direct, imperative query with city name repeated MANY times
-      // This ensures the agent cannot miss or confuse the city name
-      enhancedMessage = `The user wants information about ${cityName}. 
+      // Create a direct, imperative query emphasizing factual, city-specific information
+      // Add explicit warnings about not mixing cities
+      const citySpecificExamples = {
+        'nagpur': 'Sitabardi Fort, Deekshabhoomi, Futala Lake, Ambazari Lake, Zero Mile Stone, Saoji cuisine, Orange Barfi, Tarri Poha, Sitabuldi area, Maharajbagh',
+        'pune': 'Shaniwar Wada, Aga Khan Palace, Sinhagad Fort, Misal Pav, FC Road, Osho Ashram, Laxmi Road, Tulsi Baug',
+        'delhi': 'Red Fort, India Gate, Qutub Minar, Chandni Chowk, Chole Bhature, Parathas, Connaught Place, Jama Masjid',
+        'mumbai': 'Gateway of India, Marine Drive, Juhu Beach, Vada Pav, Pav Bhaji, Colaba Causeway, Siddhivinayak Temple'
+      };
+      
+      const cityLower = cityName.toLowerCase();
+      const specificExample = citySpecificExamples[cityLower] || 'actual places and dishes specific to this city';
+      
+      enhancedMessage = `You are a travel expert. Provide accurate, factual travel information about ${cityName}, India.
 
-CITY NAME: ${cityName}
-CITY NAME: ${cityName}
-CITY NAME: ${cityName}
+CRITICAL: Do NOT provide information about other cities. If the user asks about ${cityName}, provide information ONLY about ${cityName}.
 
-Provide comprehensive travel information about ${cityName} and ONLY ${cityName}. 
+DO NOT mention places from other cities:
+- If asked about Nagpur, do NOT mention: Shaniwar Wada, Aga Khan Palace, Sinhagad Fort, Osho Ashram, FC Road, Laxmi Road, Tulsi Baug (these are in Pune)
+- If asked about Pune, do NOT mention: Sitabardi, Deekshabhoomi, Futala Lake, Saoji (these are in Nagpur)
+- Each city has its own unique places and dishes - use only ${cityName}-specific information
 
-Do NOT provide information about Delhi, Mumbai, Bangalore, Chennai, Kolkata, Hyderabad, Jaipur, Udaipur, Goa, Varanasi, or ANY other city. Only ${cityName}.
+REQUIREMENTS FOR ${cityName}:
+- Use your knowledge base to provide REAL, FACTUAL information about ${cityName} ONLY
+- Mention ACTUAL place names, landmarks, monuments in ${cityName} (e.g., ${specificExample})
+- Mention ACTUAL local dishes famous in ${cityName} (not dishes from other cities)
+- Mention ACTUAL temple/mosque/church names in ${cityName}
+- Mention ACTUAL market names and shopping areas in ${cityName}
+- Provide REAL hotel recommendations or areas in ${cityName}
+- Include accurate transport information for ${cityName}
 
-Required information about ${cityName}:
-1. Food and famous dishes in ${cityName}
-2. Hotels (budget, mid-range, luxury) in ${cityName}  
-3. Tourist spots in ${cityName}
-4. Temples and religious places in ${cityName}
-5. Markets and shopping in ${cityName}
-6. Transport tips and best time to visit ${cityName}
+For ${cityName}, provide:
+1. Food and famous dishes: List actual dish names famous in ${cityName} (NOT dishes from other cities)
+2. Tourist spots: List actual places, monuments, parks, lakes, forts in ${cityName} (NOT places from other cities)
+3. Temples and religious places: List actual temple/mosque/church names in ${cityName}
+4. Markets and shopping: List actual market names and shopping areas in ${cityName}
+5. Hotels: Mention hotel names or areas in ${cityName}
+6. Transport and best time: Provide accurate information for ${cityName}
 
-Your response must start with "Meow 😺! Welcome to ${cityName}!" and mention ${cityName} at least 5 times. All information must be about ${cityName} only.`;
+Start with "Meow 😺! Welcome to ${cityName}!" and provide factual, accurate information with real place names and dish names specific to ${cityName} ONLY.`;
     } else if (!enhancedMessage || enhancedMessage.trim() === '') {
       // Fallback if somehow both are empty (shouldn't happen due to validation)
       enhancedMessage = 'Tell me about travel destinations.';
@@ -189,8 +251,12 @@ Your response must start with "Meow 😺! Welcome to ${cityName}!" and mention $
       const cityLower = cityName.toLowerCase();
       const responseLower = responseText.toLowerCase();
       
-      // Use helper function to detect wrong city
+      // Use helper function to detect wrong city (checks both city names and landmarks)
       const wrongCityMentioned = detectWrongCity(responseText, cityName);
+      
+      // Also check specifically for wrong landmarks
+      const wrongCityFromLandmarks = detectWrongCityLandmarks(responseText, cityName);
+      const detectedWrongCity = wrongCityFromLandmarks || wrongCityMentioned;
       
       // Check if response mentions the correct city
       const correctCityMentioned = responseLower.includes(cityLower);
@@ -198,21 +264,53 @@ Your response must start with "Meow 😺! Welcome to ${cityName}!" and mention $
       // Get correct city mention count
       const correctCityCount = (responseLower.match(new RegExp(cityLower, 'g')) || []).length;
       
+      // Check for generic information (common phrases that appear in all cities)
+      const genericPhrases = [
+        'famous tourist spots',
+        'best hotels',
+        'local food',
+        'famous dishes',
+        'temples and religious places',
+        'local markets'
+      ];
+      const hasSpecificInfo = [
+        // Check for actual place names (capitalized words that might be places)
+        /[A-Z][a-z]+ (Palace|Fort|Temple|Market|Beach|Park|Museum|Gate|Tower)/g,
+        // Check for specific dish names (common Indian dish patterns)
+        /\b(Misal|Pav|Bhature|Dosa|Biryani|Kebab|Tikka|Curry|Thali)\b/gi,
+        // Check for specific area/street names
+        /(Road|Street|Chowk|Bazaar|Market|Nagar)/gi
+      ].some(pattern => pattern.test(responseText));
+      
       console.log(`\n=== RESPONSE VALIDATION ===`);
       console.log(`Requested city: "${cityName}"`);
       console.log(`Correct city mentioned: ${correctCityMentioned} (${correctCityCount} times)`);
-      console.log(`Wrong city detected: ${wrongCityMentioned || 'None'}`);
+      console.log(`Wrong city detected (from name): ${wrongCityMentioned || 'None'}`);
+      console.log(`Wrong city detected (from landmarks): ${wrongCityFromLandmarks || 'None'}`);
+      console.log(`Final detected wrong city: ${detectedWrongCity || 'None'}`);
+      console.log(`Has specific information: ${hasSpecificInfo}`);
+      console.log(`Response length: ${responseText.length} characters`);
+      console.log(`Response preview: ${responseText.substring(0, 200)}...`);
       console.log(`===========================\n`);
       
-      if (wrongCityMentioned) {
-        console.error(`❌ CRITICAL ERROR: Response mentions wrong city "${wrongCityMentioned}" instead of "${cityName}"`);
+      // Warn if response seems generic
+      if (!hasSpecificInfo && responseText.length < 500) {
+        console.warn(`⚠️  WARNING: Response may be too generic. Consider requesting more specific information.`);
+      }
+      
+      if (detectedWrongCity) {
+        console.error(`❌ CRITICAL ERROR: Response contains information about "${detectedWrongCity}" instead of "${cityName}"`);
+        if (wrongCityFromLandmarks) {
+          console.error(`   Detected via landmarks: Response mentions landmarks from ${wrongCityFromLandmarks}`);
+        }
         console.error('Response preview:', responseText.substring(0, 400));
         
         // Try to get a corrected response with a very explicit query
         try {
-          const correctionQuery = `ERROR: You provided information about "${wrongCityMentioned}" but the user asked about "${cityName}". 
+          const wrongCityName = detectedWrongCity;
+          const correctionQuery = `CRITICAL ERROR: You provided information about "${wrongCityName}" (including places like ${cityLandmarks[wrongCityName]?.slice(0, 3).join(', ') || 'various landmarks'}) but the user asked about "${cityName}". 
 
-You MUST provide information about "${cityName}" ONLY. Do not mention "${wrongCityMentioned}" or any other city. 
+You MUST provide information about "${cityName}" ONLY. Do not mention "${wrongCityName}" or any places from "${wrongCityName}". 
 
 Provide comprehensive travel information about "${cityName}" including:
 1. Food and famous dishes in ${cityName}
@@ -229,21 +327,22 @@ Start with "Meow 😺! Welcome to ${cityName}!" and mention ${cityName} multiple
             // Validate the corrected response
             const correctedLower = correctedResponse.toLowerCase();
             const correctedHasWrongCity = detectWrongCity(correctedResponse, cityName);
+            const correctedHasWrongLandmarks = detectWrongCityLandmarks(correctedResponse, cityName);
             const correctedHasCorrectCity = correctedLower.includes(cityLower);
             
-            if (!correctedHasWrongCity && correctedHasCorrectCity) {
+            if (!correctedHasWrongCity && !correctedHasWrongLandmarks && correctedHasCorrectCity) {
               responseText = correctedResponse;
               console.log('✅ Corrected response generated and validated');
             } else {
               console.warn('⚠️  Corrected response still has issues, using text replacement');
-              responseText = replaceWrongCityInText(responseText, wrongCityMentioned, cityName);
+              responseText = replaceWrongCityInText(responseText, detectedWrongCity, cityName);
             }
           } else {
-            responseText = replaceWrongCityInText(responseText, wrongCityMentioned, cityName);
+            responseText = replaceWrongCityInText(responseText, detectedWrongCity, cityName);
           }
         } catch (error) {
           console.error('Error generating correction:', error);
-          responseText = replaceWrongCityInText(responseText, wrongCityMentioned, cityName);
+          responseText = replaceWrongCityInText(responseText, detectedWrongCity, cityName);
         }
       } else if (!correctCityMentioned) {
         console.warn(`⚠️  WARNING: Response does not mention the requested city "${cityName}"`);
