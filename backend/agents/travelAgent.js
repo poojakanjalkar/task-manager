@@ -49,8 +49,9 @@ CRITICAL INSTRUCTIONS - READ CAREFULLY:
 1. When the query mentions a city name, that is the EXACT city you must provide information about.
 2. The city name will be mentioned MANY times in the query - use THAT EXACT city name, not any other city.
 3. CRITICAL: Do NOT mix up cities. Each city has unique places and dishes:
-   - If asked about Nagpur: Mention Sitabardi, Deekshabhoomi, Futala Lake, Saoji - NOT Shaniwar Wada, Aga Khan Palace (those are in Pune)
-   - If asked about Pune: Mention Shaniwar Wada, Aga Khan Palace, Sinhagad Fort - NOT Sitabardi, Deekshabhoomi (those are in Nagpur)
+   - If asked about Nagpur: Mention Sitabardi, Deekshabhoomi, Futala Lake, Saoji - NOT Shaniwar Wada (Pune) OR Gateway of India (Mumbai)
+   - If asked about Pune: Mention Shaniwar Wada, Aga Khan Palace, Sinhagad Fort - NOT Sitabardi, Deekshabhoomi (Nagpur) OR Gateway of India (Mumbai)
+   - If asked about Mumbai: Mention Gateway of India, Marine Drive, Juhu Beach, Vada Pav, Pav Bhaji - NOT Sitabardi, Deekshabhoomi, Saoji (Nagpur) OR Shaniwar Wada (Pune)
    - If asked about Delhi: Mention Red Fort, India Gate, Chole Bhature - NOT places from other cities
 4. Before writing your response, identify the city name in the query - that is the ONLY city to discuss.
 5. Do NOT provide places, dishes, or landmarks from other cities, even if you think they're similar.
@@ -101,11 +102,14 @@ Examples of FACTUAL, city-specific information (use these as reference for what 
 - Nagpur: Sitabardi Fort, Deekshabhoomi, Futala Lake, Ambazari Lake, Zero Mile Stone, Saoji cuisine, Orange Barfi, Tarri Poha, Sitabuldi area, Maharajbagh
 - Pune: Misal Pav, Shaniwar Wada, Aga Khan Palace, Sinhagad Fort, FC Road, Osho Ashram, Dagdusheth Halwai Ganpati Temple
 - Delhi: Chole Bhature, Red Fort, India Gate, Qutub Minar, Chandni Chowk, Connaught Place, Jama Masjid
-- Mumbai: Vada Pav, Gateway of India, Marine Drive, Colaba Causeway, Juhu Beach, Siddhivinayak Temple
+- Mumbai: Vada Pav, Pav Bhaji, Gateway of India, Marine Drive, Colaba Causeway, Juhu Beach, Siddhivinayak Temple, Bandra Worli Sea Link, Elephanta Caves, Haji Ali Dargah, Crawford Market, Chor Bazaar, Leopold Cafe, Nariman Point
 - Jaipur: Dal Baati Churma, Hawa Mahal, City Palace, Johari Bazaar, Amer Fort, Jal Mahal
 - Bangalore: Masala Dosa, Lalbagh, Cubbon Park, Commercial Street, ISKCON Temple, Vidhana Soudha
 
-Each city has DIFFERENT food, DIFFERENT tourist spots, DIFFERENT culture. Provide FACTUAL information that is unique to the specific city mentioned in the query. Use real place names, real dish names, real landmarks.
+CRITICAL: Each city has DIFFERENT food, DIFFERENT tourist spots, DIFFERENT culture. 
+- Mumbai does NOT have Saoji, Sitabardi, or Deekshabhoomi (those are Nagpur)
+- Nagpur does NOT have Gateway of India or Marine Drive (those are Mumbai)
+- Provide FACTUAL information that is unique to the specific city mentioned in the query. Use real place names, real dish names, real landmarks.
 
 CRITICAL REMINDERS: 
 - Read the city name in the query VERY carefully - it will be mentioned multiple times

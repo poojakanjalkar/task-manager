@@ -3,10 +3,10 @@ import { invokeTravelAgent } from '../agents/travelAgent.js';
 
 // City-specific landmarks and places - used to detect wrong city information
 const cityLandmarks = {
-  'nagpur': ['sitabardi', 'sitabuldi', 'deekshabhoomi', 'futala lake', 'ambazari lake', 'zero mile stone', 'maharajbagh', 'seminary hills', 'ramtek', 'saoji', 'orange barfi', 'tarri poha'],
-  'pune': ['shaniwar wada', 'aga khan palace', 'sinhagad fort', 'osho ashram', 'fc road', 'laxmi road', 'tulsi baug', 'dagdusheth halwai', 'parvati hill', 'misal pav', 'vada pav'],
+  'nagpur': ['sitabardi', 'sitabuldi', 'deekshabhoomi', 'futala lake', 'ambazari lake', 'zero mile stone', 'maharajbagh', 'seminary hills', 'ramtek', 'saoji', 'orange barfi', 'tarri poha', 'sadarbazar', 'sadar bazar'],
+  'pune': ['shaniwar wada', 'aga khan palace', 'sinhagad fort', 'osho ashram', 'fc road', 'laxmi road', 'tulsi baug', 'dagdusheth halwai', 'parvati hill', 'misal pav'],
   'delhi': ['red fort', 'india gate', 'qutub minar', 'chandni chowk', 'connaught place', 'jama masjid', 'lotus temple', 'chole bhature', 'butter chicken', 'parathas'],
-  'mumbai': ['gateway of india', 'marine drive', 'juhu beach', 'colaba causeway', 'siddhivinayak temple', 'vada pav', 'pav bhaji', 'bhel puri'],
+  'mumbai': ['gateway of india', 'marine drive', 'juhu beach', 'colaba causeway', 'siddhivinayak temple', 'vada pav', 'pav bhaji', 'bhel puri', 'bandra worli sea link', 'elephanta caves', 'haji ali dargah', 'crawford market', 'chor bazaar', 'leopold cafe', 'nariman point', 'bollywood'],
   'jaipur': ['hawa mahal', 'city palace', 'johari bazaar', 'amer fort', 'jal mahal', 'dal baati churma', 'laal maas', 'ghevar'],
   'bangalore': ['lalbagh', 'cubbon park', 'commercial street', 'iskcon temple', 'vidhana soudha', 'masala dosa', 'idli vada']
 };
@@ -192,7 +192,7 @@ router.post('/chat', async (req, res) => {
         'nagpur': 'Sitabardi Fort, Deekshabhoomi, Futala Lake, Ambazari Lake, Zero Mile Stone, Saoji cuisine, Orange Barfi, Tarri Poha, Sitabuldi area, Maharajbagh',
         'pune': 'Shaniwar Wada, Aga Khan Palace, Sinhagad Fort, Misal Pav, FC Road, Osho Ashram, Laxmi Road, Tulsi Baug',
         'delhi': 'Red Fort, India Gate, Qutub Minar, Chandni Chowk, Chole Bhature, Parathas, Connaught Place, Jama Masjid',
-        'mumbai': 'Gateway of India, Marine Drive, Juhu Beach, Vada Pav, Pav Bhaji, Colaba Causeway, Siddhivinayak Temple'
+        'mumbai': 'Gateway of India, Marine Drive, Juhu Beach, Vada Pav, Pav Bhaji, Colaba Causeway, Siddhivinayak Temple, Bandra Worli Sea Link, Elephanta Caves, Haji Ali Dargah, Crawford Market, Chor Bazaar, Leopold Cafe, Nariman Point'
       };
       
       const cityLower = cityName.toLowerCase();
@@ -203,8 +203,9 @@ router.post('/chat', async (req, res) => {
 CRITICAL: Do NOT provide information about other cities. If the user asks about ${cityName}, provide information ONLY about ${cityName}.
 
 DO NOT mention places from other cities:
-- If asked about Nagpur, do NOT mention: Shaniwar Wada, Aga Khan Palace, Sinhagad Fort, Osho Ashram, FC Road, Laxmi Road, Tulsi Baug (these are in Pune)
-- If asked about Pune, do NOT mention: Sitabardi, Deekshabhoomi, Futala Lake, Saoji (these are in Nagpur)
+- If asked about Nagpur, do NOT mention: Shaniwar Wada, Aga Khan Palace, Sinhagad Fort, Osho Ashram, FC Road, Laxmi Road, Tulsi Baug (these are in Pune) OR Gateway of India, Marine Drive, Juhu Beach, Vada Pav, Pav Bhaji (these are in Mumbai)
+- If asked about Pune, do NOT mention: Sitabardi, Deekshabhoomi, Futala Lake, Saoji (these are in Nagpur) OR Gateway of India, Marine Drive (these are in Mumbai)
+- If asked about Mumbai, do NOT mention: Sitabardi, Deekshabhoomi, Futala Lake, Saoji, Orange Barfi, Tarri Poha (these are in Nagpur) OR Shaniwar Wada, Aga Khan Palace, Sinhagad Fort (these are in Pune)
 - Each city has its own unique places and dishes - use only ${cityName}-specific information
 
 REQUIREMENTS FOR ${cityName}:
