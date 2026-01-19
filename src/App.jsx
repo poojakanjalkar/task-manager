@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { Table, Button, Input, Space, Tag, Popconfirm, message } from 'antd'
-import { CheckOutlined, EditOutlined, DeleteOutlined, SaveOutlined, CloseOutlined } from '@ant-design/icons'
+import { Table, Button, Input, Space, Tag, Popconfirm, message, Modal } from 'antd'
+import { CheckOutlined, EditOutlined, DeleteOutlined, SaveOutlined, CloseOutlined, ExclamationCircleOutlined } from '@ant-design/icons'
 import { fetchTodos, createTodo, updateTodo, deleteTodo } from './services/api'
 
 /**
@@ -30,6 +30,9 @@ function App() {
   // Loading and error states
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+
+  // State for delete animation
+  const [deletingId, setDeletingId] = useState(null)
 
   // Pagination state
   const [pagination, setPagination] = useState({
@@ -174,22 +177,77 @@ function App() {
 
 
   /**
-   * Delete a task from the list
+   * Delete a task from the list with animation
    */
   const handleDeleteTodo = async (id) => {
     try {
       setError(null)
+      setDeletingId(id) // Start animation
+      
+      // Wait a bit for animation
+      await new Promise(resolve => setTimeout(resolve, 300))
+      
       await deleteTodo(id)
+      
+      // Remove from list with animation
       setTodos(todos.filter(todo => todo.id !== id))
       setPagination(prev => ({
         ...prev,
         total: todos.length - 1
       }))
-      message.success('Task deleted successfully!')
+      
+      setDeletingId(null) // End animation
+      message.success({
+        content: 'Task deleted successfully!',
+        duration: 2,
+        style: {
+          marginTop: '20vh',
+        },
+      })
     } catch (err) {
+      setDeletingId(null) // End animation on error
       setError('Failed to delete task. Please try again.')
+      message.error('Failed to delete task. Please try again.')
       console.error('Error deleting todo:', err)
     }
+  }
+
+  /**
+   * Show delete confirmation modal
+   */
+  const showDeleteConfirm = (id, taskText) => {
+    Modal.confirm({
+      title: 'Delete Task',
+      icon: <ExclamationCircleOutlined style={{ color: '#ff4d4f' }} />,
+      content: (
+        <div>
+          <p>Are you sure you want to delete this task?</p>
+          <p style={{ 
+            marginTop: '8px', 
+            padding: '8px', 
+            background: '#f5f5f5', 
+            borderRadius: '4px',
+            fontStyle: 'italic',
+            color: '#666'
+          }}>
+            "{taskText}"
+          </p>
+          <p style={{ marginTop: '8px', color: '#ff4d4f', fontSize: '12px' }}>
+            This action cannot be undone.
+          </p>
+        </div>
+      ),
+      okText: 'Yes, Delete',
+      okType: 'danger',
+      cancelText: 'Cancel',
+      centered: true,
+      onOk() {
+        handleDeleteTodo(id)
+      },
+      onCancel() {
+        // User cancelled
+      },
+    })
   }
 
   // Calculate statistics
@@ -328,21 +386,16 @@ function App() {
               title="Edit Task"
             />
           )}
-          <Popconfirm
-            title="Delete task"
-            description="Are you sure you want to delete this task?"
-            onConfirm={() => handleDeleteTodo(record.id)}
-            okText="Yes"
-            cancelText="No"
-          >
-            <Button
-              type="primary"
-              danger
-              icon={<DeleteOutlined />}
-              size="small"
-              title="Delete Task"
-            />
-          </Popconfirm>
+          <Button
+            type="primary"
+            danger
+            icon={<DeleteOutlined />}
+            size="small"
+            title="Delete Task"
+            onClick={() => showDeleteConfirm(record.id, record.text)}
+            className={deletingId === record.id ? 'deleting-animation' : ''}
+            loading={deletingId === record.id}
+          />
         </Space>
       ),
     },
@@ -464,6 +517,7 @@ function App() {
             rowKey="id"
             loading={loading}
             scroll={{ x: 1000 }}
+            rowClassName={(record) => deletingId === record.id ? 'deleting-row' : ''}
             pagination={{
               ...pagination,
               showSizeChanger: true,

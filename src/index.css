@@ -71,6 +71,43 @@
   white-space: nowrap !important;
 }
 
+/* Delete Animation */
+@keyframes deleteShake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-3px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(3px);
+  }
+}
+
+@keyframes fadeOutSlide {
+  0% {
+    opacity: 1;
+    transform: translateX(0);
+    max-height: 100px;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-100px);
+    max-height: 0;
+    padding: 0;
+    margin: 0;
+  }
+}
+
+.deleting-animation {
+  animation: deleteShake 0.5s ease-in-out;
+}
+
+/* Row deletion animation */
+.ant-table-tbody > tr.deleting-row {
+  animation: fadeOutSlide 0.3s ease-out forwards;
+}
+
 /* Tom Avatar Animations */
 @keyframes bounce-slow {
   0%, 100% {
